@@ -133,7 +133,7 @@ def seleccionarIndividuos(individuos):
 		seleccionados.append(individuos[rnd])
 	return seleccionados
 
-def recombinacion_un_punto(padre,madre):
+def cruzar(padre,madre):
 	pos = random.randrange(0,5) #randrange (0, n-1)
 	if(pos == 0):
 		pos = 2
@@ -176,7 +176,7 @@ def reproducirIndividuos(individuos):
 		madre = nueva_poblacion[random.randrange(0,n_individuos-1)]
 
 		if (rnd == "RP"):
-			hijos = recombinacion_un_punto(padre,madre)
+			hijos = cruzar(padre,madre)
 			nueva_poblacion.append(hijos[0])
 			nueva_poblacion.append(hijos[1])
 			n_individuos = n_individuos + 2
@@ -185,16 +185,36 @@ def reproducirIndividuos(individuos):
 
 	return nueva_poblacion
 
-def mutarIndividuos(individuos):
+def mutarIndividuos(individuos, genes):
 	#Mutar con probabilidad de 0.01 algun gen de un individuo
-	choices = ["MUTAR","NOMUTAR"]
-	weights = [0.05,0.95]
+	choices = ["M","N"]
+	weights = [0.01,0.99]
+	mutados = []
 	for i in individuos:
 		rnd = np.random.choice(choices, p=weights)
-		if (rnd == "MUTAR"):
-			print "MU"
+		if (rnd == "M"):
+			pos = random.randrange(0,5) #randrange (0, n-1)
+			gen = genes[random.randrange(0,len(genes))]
+			continua = True
+			iguales = 0
+			while(continua):
+				for x in range(0,5):
+					if(gen.x != i.genes[2*pos] and gen.y != i.genes[2*pos+1]):
+						iguales = iguales
+					else:
+						iguales = iguales + 1
+				if (iguales == 0):
+					continua = False
+				else:
+					gen = genes[random.randrange(0,len(genes))]	
+
+			i.genes[pos] = gen.x
+			i.genes[pos+1] = gen.y
+			mutados.append(i)		
 		else:
-			print "NOMU"
+			mutados.append(i)
+
+	return mutados
 
 
 def generarDoors(genes):
@@ -210,6 +230,7 @@ def generarDoors(genes):
 if __name__ == "__main__":
 
 	posiciones = obtenerPosiciones(sys.argv[1])
+	#en genes se guardan todas las posibles puertas
 	genes = obtenerGenes(posiciones)
 	#generarArchivo(genes)
 	individuos = generarPoblacion(genes,100)
@@ -217,10 +238,8 @@ if __name__ == "__main__":
 	for individuo in individuos:
 		#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
 		individuo.evaluar()
-		#print individuo.fitness
 	
 	individuos = seleccionarIndividuos(individuos)
 	individuos = reproducirIndividuos(individuos)
-	#for i in individuos:
-	#	print i.genes
-	mutarIndividuos(individuos)
+	individuos = mutarIndividuos(individuos, genes)
+	generarDoors(individuos[30].genes)
