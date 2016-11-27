@@ -8,9 +8,9 @@ class Posicion:
 		self.y = y
 		self.tipo = tipo
 
-	def imprimir(self):
-		print "x:{0} y:{1} tipo:{2}".format(self.x, self.y, self.tipo)
-	
+	def __eq__(self, other):
+		return self.__dict__ == other.__dict__
+
 	def obtenerVecinos(self, posiciones):
 		#A partir de un punto dado, determina cuales son los vecinos.
 		vecinos = []
@@ -32,11 +32,15 @@ class Individuo:
 		#almacenamos los genes en una lista simple de numeros
 		for g in range(0,10):
 			self.genes.append(genes[g])
-	
+	def __eq__(self, other):
+		return self.__dict__ == other.__dict__
+
 	def evaluar(self):
 		#Esta funcion es la que deberia calcular el fitness del individuo
 		#donde el fitness esta dado por el valor de ticks de la simulacion
-		self.fitness = random.randrange(30,300)
+		for x in range(0,9):
+			self.fitness = self.fitness + self.genes[x]
+
 
 def obtenerPosiciones(file):
 
@@ -100,16 +104,33 @@ def validarPunto(punto, posiciones):
 def generarPoblacion(genes, poblacion):
 	#retorna una lista de Individuos
 	individuos = []
-	rango = len(genes)
 	for x in range(0,poblacion):
-		genes_individuo =[]
-		for y in range(0,5):
-			gen = genes[random.randrange(0,rango)]
-			genes_individuo.append(gen.x)
-			genes_individuo.append(gen.y)
+		genes_individuo = asignarGenes(genes)
 		individuo = Individuo(genes_individuo) 
 		individuos.append(individuo)
 	return individuos
+
+def asignarGenes(genes):
+	#retorna los genes del individuo, y verifica que los genes no se repitan.
+	rango = len(genes)
+	genes_individuo =[]
+	n_genes = 0
+
+	lista_genes = []
+	lista_genes.append(genes[random.randrange(0,rango)])
+	for x in range(0,4):
+		continua = True
+		while(continua):
+			gen = genes[random.randrange(0,rango)]
+			if(gen in lista_genes):
+				continua = True
+			else:
+				lista_genes.append(gen)
+				continua = False
+	for x in range(0,len(lista_genes)):
+		genes_individuo.append(lista_genes[x].x)
+		genes_individuo.append(lista_genes[x].y)
+	return genes_individuo
 
 def ordenarIndividuos(individuos):
 	#Ordenamos los individuos y luego asignamos la categoria
@@ -127,32 +148,44 @@ def seleccionarIndividuos(individuos):
 	
 	weights = [0.5,0.25,0.15,0.1]
 	for x in range(1,30):
-		choices = [random.randrange(1,50),random.randrange(51,75),random.randrange(76,90),random.randrange(90,100)]
-		rnd = np.random.choice(choices, p=weights)
-		#falta aun verificar que no se repita el individuo (?)
-		seleccionados.append(individuos[rnd])
+		sigue = True
+		while(sigue):
+			choices = [random.randrange(1,50),random.randrange(51,75),random.randrange(76,90),random.randrange(90,100)]
+			rnd = np.random.choice(choices, p=weights)
+			seleccionado = individuos[rnd]
+			if seleccionado in seleccionados:
+				sigue = True
+			else:
+				seleccionados.append(individuos[rnd])
+				sigue = False
 	return seleccionados
 
 def cruzar(padre,madre):
-	pos = random.randrange(0,5) #randrange (0, n-1)
-	if(pos == 0):
-		pos = 2
-	else:
-		pos = 2*pos
-	
-	genes_hijo1 = []
-	for x in range(0,pos):
-		genes_hijo1.append(padre.genes[x])
+	#Cruzamos dos individuos, falta verificar que no se repitan los genes.
 
-	for x in range(pos,10):
-		genes_hijo1.append(madre.genes[x])
+	continua = True
+	while(continua):
+		pos = random.randrange(0,5) #randrange (0, n-1)
+		if(pos == 0):
+			pos = 2
+		else:
+			pos = 2*pos
 
-	genes_hijo2 = []
-	for x in range(0,pos):
-		genes_hijo2.append(madre.genes[x])
+		genes_hijo1 = []
+		for x in range(0,pos):
+			genes_hijo1.append(padre.genes[x])
 
-	for x in range(pos,10):
-		genes_hijo2.append(padre.genes[x])
+		for x in range(pos,10):
+			genes_hijo1.append(madre.genes[x])
+		
+		genes_hijo2 = []
+		for x in range(0,pos):
+			genes_hijo2.append(madre.genes[x])
+
+		for x in range(pos,10):
+			genes_hijo2.append(padre.genes[x])
+		continua = False
+
 	hijos = []
 	hijo1 = Individuo(genes_hijo1)
 	hijo2 = Individuo(genes_hijo2)
@@ -165,7 +198,7 @@ def reproducirIndividuos(individuos):
 	#Hay un 75% de probabilidades que un individuo se reproduzca
 	nueva_poblacion = individuos
 	choices = ["RP","NP"]
-	weights = [0.25,0.75]
+	weights = [1,0]
 	n_individuos = len(nueva_poblacion)
 	
 	while(n_individuos < 99):
@@ -188,34 +221,34 @@ def reproducirIndividuos(individuos):
 def mutarIndividuos(individuos, genes):
 	#Mutar con probabilidad de 0.01 algun gen de un individuo
 	choices = ["M","N"]
-	weights = [0.01,0.99]
+	weights = [0.05,0.95]
 	mutados = []
 	for i in individuos:
 		rnd = np.random.choice(choices, p=weights)
 		if (rnd == "M"):
 			pos = random.randrange(0,5) #randrange (0, n-1)
-			gen = genes[random.randrange(0,len(genes))]
 			continua = True
-			iguales = 0
 			while(continua):
+				iguales = 0
+				gen = genes[random.randrange(0,len(genes))]
 				for x in range(0,5):
-					if(gen.x != i.genes[2*pos] and gen.y != i.genes[2*pos+1]):
+					if(gen.x != i.genes[2*x] and gen.y != i.genes[(2*x)+1]):
 						iguales = iguales
 					else:
 						iguales = iguales + 1
+
 				if (iguales == 0):
 					continua = False
+					i.genes[2*pos] = gen.x
+					i.genes[2*pos+1] = gen.y
 				else:
-					gen = genes[random.randrange(0,len(genes))]	
+					continua = True	
 
-			i.genes[pos] = gen.x
-			i.genes[pos+1] = gen.y
 			mutados.append(i)		
 		else:
 			mutados.append(i)
 
 	return mutados
-
 
 def generarDoors(genes):
 	#modificado por qe ahora debe funcionar con una lista simple
@@ -233,13 +266,23 @@ if __name__ == "__main__":
 	#en genes se guardan todas las posibles puertas
 	genes = obtenerGenes(posiciones)
 	#generarArchivo(genes)
+
+	#primera generacion.
 	individuos = generarPoblacion(genes,100)
-	
 	for individuo in individuos:
 		#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
+		#conectando la wea de netlogo
 		individuo.evaluar()
 	
-	individuos = seleccionarIndividuos(individuos)
-	individuos = reproducirIndividuos(individuos)
-	individuos = mutarIndividuos(individuos, genes)
-	generarDoors(individuos[30].genes)
+	#aca especificamos el numero de generaciones
+	for x in range(0,1):
+		for individuo in individuos:
+			#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
+			#conectando la wea de netlogo
+			individuo.evaluar()
+		individuos = seleccionarIndividuos(individuos)
+		individuos = reproducirIndividuos(individuos)
+		individuos = mutarIndividuos(individuos, genes)
+	
+	individuos = ordenarIndividuos(individuos)
+	generarDoors(individuos[0].genes)
