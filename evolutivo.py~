@@ -42,11 +42,14 @@ class Individuo:
 		#donde el fitness esta dado por el valor de ticks de la simulacion
 
 		generarDoors(self.genes)
+		bridge.openModel("/home/matias/Descargas/AlgoritmosEvolutivos/escape4.nlogo")
 		bridge.command("load-fixed-plan-file")
 		bridge.command("load-fixed-door-file")
 		bridge.command("generate-population")
 		bridge.command("repeat 200 [ go ]")
 		self.fitness = bridge.report("ticks")
+		print "fitness: {0}".format(self.fitness)
+
 
 def obtenerPosiciones(file):
 
@@ -269,8 +272,7 @@ def generarDoors(genes):
 if __name__ == "__main__":
 
 	gw = JavaGateway() # New gateway connection
-	bridge = gw.entry_point # The actual NetLogoBridge object
-	bridge.openModel("/home/matias/Descargas/AlgoritmosEvolutivos/escape4.nlogo")
+	bridge = gw.entry_point # The actual NetLogoBridge object 
 
 	posiciones = obtenerPosiciones(sys.argv[1])
 	#en genes se guardan todas las posibles puertas
@@ -285,14 +287,14 @@ if __name__ == "__main__":
 		individuo.evaluar(bridge)
 	
 	#aca especificamos el numero de generaciones
-	for x in range(0,1):
-		for individuo in individuos:
-			#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
-			#conectando la wea de netlogo
-			individuo.evaluar()
-		individuos = seleccionarIndividuos(individuos)
-		individuos = reproducirIndividuos(individuos)
-		individuos = mutarIndividuos(individuos, genes)
-	
-	individuos = ordenarIndividuos(individuos)
-	generarDoors(individuos[0].genes)
+	#for x in range(0,1):
+	#	for individuo in individuos:
+	#		#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
+	#		#conectando la wea de netlogo
+	#		individuo.evaluar()
+	#	individuos = seleccionarIndividuos(individuos)
+	#	individuos = reproducirIndividuos(individuos)
+	#	individuos = mutarIndividuos(individuos, genes)
+	#
+	#individuos = ordenarIndividuos(individuos)
+	#generarDoors(individuos[0].genes)
