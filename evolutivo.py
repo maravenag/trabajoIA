@@ -1,6 +1,7 @@
-import sys
 import random
+import sys
 import numpy as np
+from py4j.java_gateway import JavaGateway
 
 class Posicion:
 	def __init__(self,x,y,tipo):
@@ -32,14 +33,22 @@ class Individuo:
 		#almacenamos los genes en una lista simple de numeros
 		for g in range(0,10):
 			self.genes.append(genes[g])
+
 	def __eq__(self, other):
 		return self.__dict__ == other.__dict__
 
-	def evaluar(self):
+	def evaluar(self, bridge):
 		#Esta funcion es la que deberia calcular el fitness del individuo
 		#donde el fitness esta dado por el valor de ticks de la simulacion
-		for x in range(0,9):
-			self.fitness = self.fitness + self.genes[x]
+
+		generarDoors(self.genes)
+		bridge.openModel("/home/matias/Descargas/AlgoritmosEvolutivos/escape4.nlogo")
+		bridge.command("load-fixed-plan-file")
+		bridge.command("load-fixed-door-file")
+		bridge.command("generate-population")
+		bridge.command("repeat 200 [ go ]")
+		self.fitness = bridge.report("ticks")
+		print "fitness: {0}".format(self.fitness)
 
 
 def obtenerPosiciones(file):
@@ -198,7 +207,7 @@ def reproducirIndividuos(individuos):
 	#Hay un 75% de probabilidades que un individuo se reproduzca
 	nueva_poblacion = individuos
 	choices = ["RP","NP"]
-	weights = [1,0]
+	weights = [0.25,0.75]
 	n_individuos = len(nueva_poblacion)
 	
 	while(n_individuos < 99):
@@ -262,6 +271,9 @@ def generarDoors(genes):
 
 if __name__ == "__main__":
 
+	gw = JavaGateway() # New gateway connection
+	bridge = gw.entry_point # The actual NetLogoBridge object 
+
 	posiciones = obtenerPosiciones(sys.argv[1])
 	#en genes se guardan todas las posibles puertas
 	genes = obtenerGenes(posiciones)
@@ -272,17 +284,17 @@ if __name__ == "__main__":
 	for individuo in individuos:
 		#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
 		#conectando la wea de netlogo
-		individuo.evaluar()
+		individuo.evaluar(bridge)
 	
 	#aca especificamos el numero de generaciones
-	for x in range(0,1):
-		for individuo in individuos:
-			#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
-			#conectando la wea de netlogo
-			individuo.evaluar()
-		individuos = seleccionarIndividuos(individuos)
-		individuos = reproducirIndividuos(individuos)
-		individuos = mutarIndividuos(individuos, genes)
-	
-	individuos = ordenarIndividuos(individuos)
-	generarDoors(individuos[0].genes)
+	#for x in range(0,1):
+	#	for individuo in individuos:
+	#		#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
+	#		#conectando la wea de netlogo
+	#		individuo.evaluar()
+	#	individuos = seleccionarIndividuos(individuos)
+	#	individuos = reproducirIndividuos(individuos)
+	#	individuos = mutarIndividuos(individuos, genes)
+	#
+	#individuos = ordenarIndividuos(individuos)
+	#generarDoors(individuos[0].genes)
