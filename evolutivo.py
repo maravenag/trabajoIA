@@ -264,7 +264,6 @@ def generarDoors(genes):
 		if x in [1,3,5,7,9]:
 			doors.write("\n")
 	doors.close()
-	print "Generado: doors.plan"
 
 if __name__ == "__main__":
 
@@ -277,22 +276,22 @@ if __name__ == "__main__":
 	genes = obtenerGenes(posiciones)
 	#generarArchivo(genes)
 
-	#primera generacion.
 	individuos = generarPoblacion(genes,100)
-	for individuo in individuos:
-		#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
-		#conectando la wea de netlogo
-		individuo.evaluar(bridge)
 	
 	#aca especificamos el numero de generaciones
-	for x in range(0,1):
+	for x in range(0,6):
+		print "generacion: {0}".format(x)
 		for individuo in individuos:
 			#Ahora se supone que hay que evaluar cada uno de los individuos para determinar el fitness de cada uno
 			#conectando la wea de netlogo
-			individuo.evaluar()
+			individuo.evaluar(bridge)
 		individuos = seleccionarIndividuos(individuos)
+		
+		individuos2 = ordenarIndividuos(individuos)
+		print individuos2[0].fitness
+
 		individuos = reproducirIndividuos(individuos)
+
 		individuos = mutarIndividuos(individuos, genes)
 	
-	individuos = ordenarIndividuos(individuos)
 	generarDoors(individuos[0].genes)
