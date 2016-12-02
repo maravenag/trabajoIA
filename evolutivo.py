@@ -185,7 +185,7 @@ def seleccionarIndividuos(individuos):
 def cruzar(padre, madre):
     # Cruzamos dos individuos, falta verificar que no se repitan los genes.
     continua = True
-    while continua:
+    while continua: #<--- este while es inutil, nunca pasa de 1 iteración, esa es la idea o no D:?
         pos = random.randrange(0, 5)  # randrange (0, n-1)
         if pos == 0:
             pos = 2
@@ -294,14 +294,14 @@ if __name__ == "__main__":
     genes = obtenerGenes(posiciones)
     # generarArchivo(genes)
 
-    individuos = generarPoblacion(genes, 100)
+    individuos = generarPoblacion(genes, 200)
 
     # aca especificamos el numero de generaciones
     for x in range(0, 6):
         print "generacion: {0}".format(x)
         for individuo in individuos:
             # Ahora se supone que hay que evaluar cada uno de los
-                        # individuos para determinar el fitness de cada uno
+            # individuos para determinar el fitness de cada uno
             # conectando la wea de netlogo
             individuo.evaluar(bridge)
         individuos = seleccionarIndividuos(individuos)
