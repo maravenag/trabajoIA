@@ -3,8 +3,9 @@
 import random
 import sys
 import numpy as np
-from config import DOORS, SOLUTIONS, NETLOGOMODEL
+from config import DOORS, SOLUTIONS, NETLOGOMODEL, PLANFILE
 from py4j.java_gateway import JavaGateway
+from config import createPlanFile
 
 
 class Posicion():
@@ -53,7 +54,16 @@ class Individuo():
         bridge.command("load-fixed-door-file")
         bridge.command("generate-population")
         bridge.command("repeat 200 [ go ]")
-        self.fitness = bridge.report("ticks")
+        new_fitness = bridge.report("ticks")
+        if (self.fitness == 0):
+            
+            self.fitness = new_fitness
+
+        elif(self.fitness > new_fitness):
+
+            self.fitness = new_fitness
+        else:
+            self.fitness = self.fitness
 
 
 def obtenerPosiciones(file):
@@ -179,6 +189,7 @@ def seleccionarIndividuos(individuos):
             else:
                 seleccionados.append(individuos[rnd])
                 sigue = False
+    seleccionados = ordenarIndividuos(seleccionados)
     return seleccionados
 
 
@@ -237,6 +248,7 @@ def reproducirIndividuos(individuos):
         else:
             pass
 
+    nueva_poblacion = ordenarIndividuos(nueva_poblacion)
     return nueva_poblacion
 
 
@@ -270,6 +282,7 @@ def mutarIndividuos(individuos, genes):
         else:
             mutados.append(i)
 
+    mutados = ordenarIndividuos(mutados)
     return mutados
 
 
@@ -289,7 +302,8 @@ if __name__ == "__main__":
     bridge = gw.entry_point  # The actual NetLogoBridge object
     bridge.openModel(NETLOGOMODEL)
 
-    posiciones = obtenerPosiciones(sys.argv[1])
+    createPlanFile(sys.argv[1])
+    posiciones = obtenerPosiciones(PLANFILE)
     # en genes se guardan todas las posibles puertas
     genes = obtenerGenes(posiciones)
     # generarArchivo(genes)
@@ -297,20 +311,21 @@ if __name__ == "__main__":
     individuos = generarPoblacion(genes, 200)
 
     # aca especificamos el numero de generaciones
-    for x in range(0, 6):
+    for x in range(0, 1):
         print "generacion: {0}".format(x)
         for individuo in individuos:
             # Ahora se supone que hay que evaluar cada uno de los
             # individuos para determinar el fitness de cada uno
             # conectando la wea de netlogo
             individuo.evaluar(bridge)
-        individuos = seleccionarIndividuos(individuos)
 
-        individuos2 = ordenarIndividuos(individuos)
-        print individuos2[0].fitness
+        individuos = seleccionarIndividuos(individuos)
+        mejor = individuos[0]
+        print "mejor: {0}".format(mejor.fitness)
 
         individuos = reproducirIndividuos(individuos)
 
         individuos = mutarIndividuos(individuos, genes)
 
-    generarDoors(individuos[0].genes)
+
+    generarDoors(mejor.genes)
