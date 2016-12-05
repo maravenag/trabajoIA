@@ -220,23 +220,23 @@ def cruzar(padre, madre):
 
     for x in range(pos, 10):
         genes_hijo2.append(padre.genes[x])
-    # buscando duplicados
-    # se castigan los duplicados, aumentando en 10 el gen duplicado,
-    # si se sigue duplicando se repite el proceso
+    #buscando duplicados
+    duplicados1 = False
+    duplicados2 = False
+
     for i in range(0,5):
         for j in range(0,5):
             if i != j:
                 if [genes_hijo1[(i*2)],genes_hijo1[(i*2)+1]] == [genes_hijo1[(j*2)],genes_hijo1[(j*2)+1]]:
-                    genes_hijo1[(i*2)] = genes_hijo2[(i*2)] + 10
-                    genes_hijo1[(i*2)+1] = genes_hijo2[(i*2)+1] + 10
+                    duplicados1 = True
                 if [genes_hijo2[(i*2)],genes_hijo2[(i*2)+1]] == [genes_hijo2[(j*2)],genes_hijo2[(j*2)+1]]:
-                    genes_hijo2[(i*2)] = genes_hijo1[(i*2)] + 10
-                    genes_hijo2[(i*2)+1] = genes_hijo1[(i*2)+1] + 10
+                    duplicados2 = True
     hijos = []
-    hijo1 = Individuo(genes_hijo1)
-    hijos.append(hijo1)
-    hijo2 = Individuo(genes_hijo2)
-    hijos.append(hijo2)
+    if not duplicados1 and not duplicados2:
+        hijo1 = Individuo(genes_hijo1)
+        hijos.append(hijo1)
+        hijo2 = Individuo(genes_hijo2)
+        hijos.append(hijo2)
     return hijos
 
 
