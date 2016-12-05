@@ -3,8 +3,13 @@
 import random
 import sys
 import numpy as np
-from config import DOORS, SOLUTIONS, NETLOGOMODEL, PLANFILE, createPlanFile
+from config import DOORS, \
+                    SOLUTIONS, \
+                    NETLOGOMODEL, \
+                    PLANFILE, \
+                    createPlanFile
 from py4j.java_gateway import JavaGateway
+from collections import Counter
 
 
 class Posicion():
@@ -195,32 +200,42 @@ def seleccionarIndividuos(individuos):
 def cruzar(padre, madre):
     # Cruzamos dos individuos, falta verificar que no se repitan los genes.
     continua = True
-    while continua: #<--- este while es inutil, nunca pasa de 1 iteración, esa es la idea o no D:?
-        pos = random.randrange(0, 5)  # randrange (0, n-1)
-        if pos == 0:
-            pos = 2
-        else:
-            pos = 2 * pos
+    
+    pos = random.randrange(0, 5)  # randrange (0, n-1)
+    if pos == 0:
+        pos = 2
+    else:
+        pos = 2 * pos
 
-        genes_hijo1 = []
-        for x in range(0, pos):
-            genes_hijo1.append(padre.genes[x])
+    genes_hijo1 = []
+    for x in range(0, pos):
+        genes_hijo1.append(padre.genes[x])
 
-        for x in range(pos, 10):
-            genes_hijo1.append(madre.genes[x])
+    for x in range(pos, 10):
+        genes_hijo1.append(madre.genes[x])
 
-        genes_hijo2 = []
-        for x in range(0, pos):
-            genes_hijo2.append(madre.genes[x])
+    genes_hijo2 = []
+    for x in range(0, pos):
+        genes_hijo2.append(madre.genes[x])
 
-        for x in range(pos, 10):
-            genes_hijo2.append(padre.genes[x])
-        continua = False
-
+    for x in range(pos, 10):
+        genes_hijo2.append(padre.genes[x])
+    # buscando duplicados
+    # se castigan los duplicados, aumentando en 10 el gen duplicado,
+    # si se sigue duplicando se repite el proceso
+    for i in range(0,5):
+        for j in range(0,5):
+            if i != j:
+                if [genes_hijo1[(i*2)],genes_hijo1[(i*2)+1]] == [genes_hijo1[(j*2)],genes_hijo1[(j*2)+1]]:
+                    genes_hijo1[(i*2)] = genes_hijo2[(i*2)] + 10
+                    genes_hijo1[(i*2)+1] = genes_hijo2[(i*2)+1] + 10
+                if [genes_hijo2[(i*2)],genes_hijo2[(i*2)+1]] == [genes_hijo2[(j*2)],genes_hijo2[(j*2)+1]]:
+                    genes_hijo2[(i*2)] = genes_hijo1[(i*2)] + 10
+                    genes_hijo2[(i*2)+1] = genes_hijo1[(i*2)+1] + 10
     hijos = []
     hijo1 = Individuo(genes_hijo1)
-    hijo2 = Individuo(genes_hijo2)
     hijos.append(hijo1)
+    hijo2 = Individuo(genes_hijo2)
     hijos.append(hijo2)
     return hijos
 
@@ -241,11 +256,12 @@ def reproducirIndividuos(individuos, bridge):
 
         if rnd == "RP":
             hijos = cruzar(padre, madre)
-            hijos[0].evaluar(bridge)
-            hijos[1].evaluar(bridge)
-            nueva_poblacion.append(hijos[0])
-            nueva_poblacion.append(hijos[1])
-            n_individuos = n_individuos + 2
+            if hijos != []:
+                hijos[0].evaluar(bridge)
+                hijos[1].evaluar(bridge)
+                nueva_poblacion.append(hijos[0])
+                nueva_poblacion.append(hijos[1])
+                n_individuos = n_individuos + 2
         else:
             pass
 
