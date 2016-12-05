@@ -3,9 +3,8 @@
 import random
 import sys
 import numpy as np
-from config import DOORS, SOLUTIONS, NETLOGOMODEL, PLANFILE
+from config import DOORS, SOLUTIONS, NETLOGOMODEL, PLANFILE, createPlanFile
 from py4j.java_gateway import JavaGateway
-from config import createPlanFile
 
 
 class Posicion():
@@ -226,7 +225,7 @@ def cruzar(padre, madre):
     return hijos
 
 
-def reproducirIndividuos(individuos):
+def reproducirIndividuos(individuos, bridge):
     # Hay un 75% de probabilidades que un individuo se reproduzca
     nueva_poblacion = individuos
     choices = ["RP", "NP"]
@@ -242,6 +241,8 @@ def reproducirIndividuos(individuos):
 
         if rnd == "RP":
             hijos = cruzar(padre, madre)
+            hijos[0].evaluar(bridge)
+            hijos[1].evaluar(bridge)
             nueva_poblacion.append(hijos[0])
             nueva_poblacion.append(hijos[1])
             n_individuos = n_individuos + 2
@@ -252,7 +253,7 @@ def reproducirIndividuos(individuos):
     return nueva_poblacion
 
 
-def mutarIndividuos(individuos, genes):
+def mutarIndividuos(individuos, genes, bridge):
     # Mutar con probabilidad de 0.01 algun gen de un individuo
     choices = ["M", "N"]
     weights = [0.05, 0.95]
@@ -276,8 +277,10 @@ def mutarIndividuos(individuos, genes):
                     i.genes[2 * pos] = gen.x
                     i.genes[2 * pos + 1] = gen.y
                 else:
-                    continua = True
-
+                    continua = True  
+            #Se cambia fitness para la nueva evaluacion
+            i.fitness = 0
+            i.evaluar(bridge)
             mutados.append(i)
         else:
             mutados.append(i)
@@ -308,10 +311,10 @@ if __name__ == "__main__":
     genes = obtenerGenes(posiciones)
     # generarArchivo(genes)
 
-    individuos = generarPoblacion(genes, 200)
+    individuos = generarPoblacion(genes, 100)
 
     # aca especificamos el numero de generaciones
-    for x in range(0, 1):
+    for x in range(0, 10):
         print "generacion: {0}".format(x)
         for individuo in individuos:
             # Ahora se supone que hay que evaluar cada uno de los
@@ -323,9 +326,8 @@ if __name__ == "__main__":
         mejor = individuos[0]
         print "mejor: {0}".format(mejor.fitness)
 
-        individuos = reproducirIndividuos(individuos)
+        individuos = reproducirIndividuos(individuos,bridge)
 
-        individuos = mutarIndividuos(individuos, genes)
-
+        individuos = mutarIndividuos(individuos, genes, bridge)
 
     generarDoors(mejor.genes)
