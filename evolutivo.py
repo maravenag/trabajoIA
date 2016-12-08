@@ -181,6 +181,8 @@ def seleccionarIndividuos(individuos):
     seleccionados.append(individuos[0])
 
     weights = [0.5, 0.25, 0.15, 0.1]
+
+    #se seleccionan aleatoriamente 30 individuos de forma uniforme
     for x in range(1, 30):
         sigue = True
         while sigue:
@@ -198,7 +200,9 @@ def seleccionarIndividuos(individuos):
 
 
 def cruzar(padre, madre):
-    # Cruzamos dos individuos, falta verificar que no se repitan los genes.
+    # Cruzamos dos individuos se cruzan individuos en los que no se repiten sus genes al
+    #hacer el cruce
+
     continua = True
     
     pos = random.randrange(0, 5)  # randrange (0, n-1)
@@ -241,10 +245,10 @@ def cruzar(padre, madre):
 
 
 def reproducirIndividuos(individuos, bridge):
-    # Hay un 75% de probabilidades que un individuo se reproduzca
+    # Hay un 75% de probabilidades que un individuo no se reproduzca
     nueva_poblacion = individuos
     choices = ["RP", "NP"]
-    weights = [0.25, 0.75]
+    weights = [0.40, 0.60]
     n_individuos = len(nueva_poblacion)
 
     while n_individuos < 99:
@@ -272,7 +276,7 @@ def reproducirIndividuos(individuos, bridge):
 def mutarIndividuos(individuos, genes, bridge):
     # Mutar con probabilidad de 0.01 algun gen de un individuo
     choices = ["M", "N"]
-    weights = [0.05, 0.95]
+    weights = [0.1, 0.90]
     mutados = []
     for i in individuos:
         rnd = np.random.choice(choices, p=weights)
@@ -330,7 +334,7 @@ if __name__ == "__main__":
     individuos = generarPoblacion(genes, 100)
 
     # aca especificamos el numero de generaciones
-    for x in range(0, 10):
+    for x in range(1, 20):
         print "generacion: {0}".format(x)
         for individuo in individuos:
             # Ahora se supone que hay que evaluar cada uno de los

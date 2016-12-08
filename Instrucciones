@@ -1,0 +1,11 @@
+Para ejecutar la tarea de deben seguir los siguientes pasos:
+
+1) Instalar la librería numpy de python mediante "sudo pip install numpy"
+
+2) En la terminar ejecutar el archivo bridge.jar mediante java -jar bridge.jar
+
+3) Cuando el programa bridge.jar indique "SERVER RUNNING" de debe ejecutar el script evolutivo.py
+   mediante python evolutivo.py nombredelarchivo.plan
+
+Para que funcione correctamente el archivo escape4.nlogo y el archivo .plan deben estar en el mismo directorio
+que el programa bridge.jar y evolutivo.py
