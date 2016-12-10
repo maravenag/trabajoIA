@@ -255,8 +255,8 @@ def reproducirIndividuos(individuos, bridge):
 
         rnd = np.random.choice(choices, p=weights)
         # tomamos un padre y madre aleatorio
-        padre = nueva_poblacion[random.randrange(0, n_individuos - 1)]
-        madre = nueva_poblacion[random.randrange(0, n_individuos - 1)]
+        padre = individuos[random.randrange(0, len(individuos) - 1)]
+        madre = individuos[random.randrange(0, len(individuos) - 1)]
 
         if rnd == "RP":
             hijos = cruzar(padre, madre)
@@ -276,7 +276,7 @@ def reproducirIndividuos(individuos, bridge):
 def mutarIndividuos(individuos, genes, bridge):
     # Mutar con probabilidad de 0.01 algun gen de un individuo
     choices = ["M", "N"]
-    weights = [0.1, 0.90]
+    weights = [0.01, 0.99]
     mutados = []
     for i in individuos:
         rnd = np.random.choice(choices, p=weights)
@@ -339,7 +339,6 @@ if __name__ == "__main__":
         for individuo in individuos:
             # Ahora se supone que hay que evaluar cada uno de los
             # individuos para determinar el fitness de cada uno
-            # conectando la wea de netlogo
             individuo.evaluar(bridge)
 
         individuos = seleccionarIndividuos(individuos)
