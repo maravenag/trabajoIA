@@ -3,14 +3,14 @@
 import random
 import sys
 import numpy as np
+from py4j.java_gateway import JavaGateway
 from config import DOORS, \
                     SOLUTIONS, \
                     NETLOGOMODEL, \
                     PLANFILE, \
+                    PLANARRAY, \
+                    doorsFile, \
                     createPlanFile
-from py4j.java_gateway import JavaGateway
-from collections import Counter
-
 
 class Posicion():
 
@@ -310,9 +310,12 @@ def mutarIndividuos(individuos, genes, bridge):
     return mutados
 
 
-def generarDoors(genes):
+def generarDoors(genes, file=None):
     # modificado por qe ahora debe funcionar con una lista simple
-    doors = open(DOORS, "w")
+    if file == None:
+        doors = open(DOORS, "w")
+    else:
+        doors = open(doorsFile(file), "w")
     for x in range(0, 10):
         doors.write("{0} ".format(genes[x]))
         if x in [1, 3, 5, 7, 9]:
@@ -321,12 +324,21 @@ def generarDoors(genes):
 
 
 if __name__ == "__main__":
-
+    try:
+        numero_pruebas = int(sys.argv[1])
+        plan_elegido = PLANARRAY[int(sys.argv[2])]
+        print u"Total de evaluaciones a realizar por plan: ", sys.argv[1]
+        print u'El plan elegido es: ', plan_elegido
+    except:
+        numero_pruebas = 10
+        plan_elegido = PLANARRAY[0]
+        print u"El número de pruebas a realizar será el por defecto (10 rondas)"
+        print u'El plan elegido es: ', plan_elegido
     gw = JavaGateway()  # New gateway connection
     bridge = gw.entry_point  # The actual NetLogoBridge object
     bridge.openModel(NETLOGOMODEL)
 
-    createPlanFile(sys.argv[1])
+    createPlanFile(plan_elegido)
     posiciones = obtenerPosiciones(PLANFILE)
     # en genes se guardan todas las posibles puertas
     genes = obtenerGenes(posiciones)
@@ -335,7 +347,7 @@ if __name__ == "__main__":
     individuos = generarPoblacion(genes, 100)
 
     # aca especificamos el numero de generaciones
-    for x in range(1, 10):
+    for x in range(0, numero_pruebas):
         print "generacion: {0}".format(x)
         for individuo in individuos:
             # Ahora se supone que hay que evaluar cada uno de los
@@ -350,4 +362,4 @@ if __name__ == "__main__":
 
         individuos = mutarIndividuos(individuos, genes, bridge)
 
-    generarDoors(mejor.genes)
+    generarDoors(mejor.genes, plan_elegido)
