@@ -279,31 +279,32 @@ def mutarIndividuos(individuos, genes, bridge):
     weights = [0.01, 0.99]
     mutados = []
     for i in individuos:
-        rnd = np.random.choice(choices, p=weights)
-        if rnd == "M":
-            pos = random.randrange(0, 5)  # randrange (0, n-1)
-            continua = True
-            while continua:
-                iguales = 0
-                gen = genes[random.randrange(0, len(genes))]
-                for x in range(0, 5):
-                    if gen.x != i.genes[2 * x] and gen.y != i.genes[(2 * x) + 1]:
-                        iguales = iguales
-                    else:
-                        iguales = iguales + 1
+        for pos in [0,1,2,3,4]:
+            rnd = np.random.choice(choices, p=weights)
+            if rnd == "M":
+                #pos = random.randrange(0, 5)  # randrange (0, n-1)
+                continua = True
+                while continua:
+                    iguales = 0
+                    gen = genes[random.randrange(0, len(genes))]
+                    for x in range(0, 5):
+                        if gen.x != i.genes[2 * x] and gen.y != i.genes[(2 * x) + 1]:
+                            iguales = iguales
+                        else:
+                            iguales = iguales + 1
 
-                if iguales == 0:
-                    continua = False
-                    i.genes[2 * pos] = gen.x
-                    i.genes[2 * pos + 1] = gen.y
-                else:
-                    continua = True  
-            #Se cambia fitness para la nueva evaluacion
-            i.fitness = 0
-            i.evaluar(bridge)
-            mutados.append(i)
-        else:
-            mutados.append(i)
+                    if iguales == 0:
+                        continua = False
+                        i.genes[2 * pos] = gen.x
+                        i.genes[2 * pos + 1] = gen.y
+                    else:
+                        continua = True  
+                #Se cambia fitness para la nueva evaluacion
+                i.fitness = 0
+                i.evaluar(bridge)
+            else:
+                pass
+        mutados.append(i)
 
     mutados = ordenarIndividuos(mutados)
     return mutados
@@ -334,7 +335,7 @@ if __name__ == "__main__":
     individuos = generarPoblacion(genes, 100)
 
     # aca especificamos el numero de generaciones
-    for x in range(1, 20):
+    for x in range(1, 10):
         print "generacion: {0}".format(x)
         for individuo in individuos:
             # Ahora se supone que hay que evaluar cada uno de los
@@ -343,7 +344,7 @@ if __name__ == "__main__":
 
         individuos = seleccionarIndividuos(individuos)
         mejor = individuos[0]
-        print "mejor: {0}".format(mejor.fitness)
+        print "mejor     : {0}".format(mejor.fitness)
 
         individuos = reproducirIndividuos(individuos,bridge)
 
